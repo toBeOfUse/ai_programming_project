@@ -1,5 +1,12 @@
 {
-  "hidden_layers": 3,
   "input_variables": 2,
-  "output_variables": 1
+  "output_variables": 1,
+  "hidden_layers": 1,
+  "perceptrons_per_hidden_layer": 3,
+  "perceptron_bias": 0.3,
+  "perceptron_firing_threshold": 0.3,
+  "max_cycles": 100,
+  "learning_threshold": 0.3,
+  "learning_rate": 0.15,
+  "training_data_location": "atan2.csv"
 }

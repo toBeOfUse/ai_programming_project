@@ -5,26 +5,14 @@ from typing import NamedTuple
 from random import uniform
 import math
 from inspect import signature
+import numpy as np
 
 TrainingData = NamedTuple(
     "TrainingData", [("input", tuple[float]), ("output", tuple[float])]
 )
-Vector = list[float]
-Matrix = list[Vector]
 
-def print_matrix(matrix: Matrix):
+def print_matrix(matrix: np.array):
     print("\n".join(" ".join(f"{el:8.4f}" for el in row) for row in matrix))
-
-def matrix_weight_mult(matrix: Matrix, vector: Vector):
-    """returns matrix*vector. the vector is interpreted as a column matrix, so
-    the dimensions of the result for an mxn matrix are mx1 (and the vector must
-    have n elements.)"""
-    assert len(matrix[0]) == len(vector), \
-        "number of cols in matrix must match number of elements in vector"
-    return [
-        sum(matrix[row][col]*vector[col] for col in range(len(vector)))
-        for row in range(len(matrix))
-    ]
 
 def read_training_data(
     file_path: str, num_inputs: int, num_outputs: int
@@ -66,14 +54,11 @@ def read_config() -> dict[str, int|float|str]:
 
 def create_random_matrix(
     rows: int, cols: int, lower_bound: float = -1.0, upper_bound: float = 1.0
-) -> Matrix:
-    return [
+) -> np.array:
+    return np.array([
         [uniform(lower_bound, upper_bound) for _ in range(cols)]
         for _ in range(rows)
-    ]
-
-def compute_error(target_output: Vector, actual_output: Vector):
-    return math.dist(target_output, actual_output)
+    ])
 
 class NeuralNetwork:
     def __init__(self, input_variables: int, output_variables: int, hidden_layers: int,
@@ -90,8 +75,17 @@ class NeuralNetwork:
         self.learning_error_threshold = learning_error_threshold
         self.learning_rate = learning_rate
         self.layer_matrices = self.create_initial_matrices()
+    
+    def cost_derivative(self, actual_output: np.array, target_output: np.array) -> np.array:
+        return actual_output-target_output
+    
+    def activation(self, cumulative_input):
+        return 1 / (1 + np.exp(-cumulative_input))
+    
+    def activation_derivative(self, cumulative_input):
+        return self.activation(cumulative_input) * (1-self.activation(cumulative_input))
 
-    def create_initial_matrices(self) -> list[Matrix]:
+    def create_initial_matrices(self) -> list[np.array]:
         """There is one matrix for the input layer that produces its output, which
         is the input for the first hidden layer; then num_hidden_layers matrices
         that produce the output for each successive hidden layer, with the final one
@@ -109,49 +103,83 @@ class NeuralNetwork:
 
     def threshold_fire(self, incoming_value: float) -> float:
         if incoming_value > self.neuron_firing_threshold:
-            return 1 / (1 + math.exp(-incoming_value))
+            return self.activation(incoming_value)
         else:
-            return 0
+            return incoming_value*0
 
-    def process_network_layer(self, input_weights: Matrix, input_vector: Vector) -> Vector:
+    def process_network_layer(self, input_weights: np.array, input_vector: np.array) -> np.array:
         weighted_and_biased = [
             d+self.neuron_bias for d in 
-            matrix_weight_mult(input_weights, input_vector)
+            np.dot(input_weights, input_vector)
         ]
-        return [self.threshold_fire(d) for d in weighted_and_biased]
+        return np.array([self.threshold_fire(d) for d in weighted_and_biased])
     
-    def process_input(self, input: Vector) -> Vector:
+    def process_input(self, input: np.array) -> np.array:
         assert len(input) == self.input_variables, "incorrect number of inputs given"
         output = input
         for matrix in self.layer_matrices:
             output = self.process_network_layer(matrix, output)
-        return [self.threshold_fire(v) for v in output]
+        return np.array([self.threshold_fire(v) for v in output])
 
-    def train_network(self, training_data: list[TrainingData]) -> list[Matrix]:
+    def train_network(self, training_data: list[TrainingData]) -> None:
         for i in range(self.max_cycles):
+            # process data forwards, accumulating the input and output values
             cycle_test_data = training_data[i % len(training_data)]
-            layer_one_input = cycle_test_data.input
+            input_layer_output = np.array([cycle_test_data.input]).T  # paradoxical, i know
             desired_output = cycle_test_data.output
-            layer_one_input = map(lambda d: d + self.bias, layer_one_input)
-            output = [self.threshold_fire(d) for d in layer_one_input]
+            current_output = input_layer_output
+            outputs = [np.array(input_layer_output)]
+            cumulative_inputs = []
+            # process all hidden layers to eventually get input to output layer
             for layer_matrix in self.layer_matrices:
-                output = self.process_network_layer(layer_matrix, output)
-            assert len(output) == self.output_variables
-            error = math.dist(output, desired_output)
-            print("error:", error)
+                cumulative_input = np.dot(layer_matrix, current_output)+self.neuron_bias
+                cumulative_inputs.append(cumulative_input)
+                current_output = np.array([self.threshold_fire(d) for d in cumulative_input])
+                outputs.append(current_output)
+            assert len(current_output) == self.output_variables
+            error = math.dist(tuple(current_output), desired_output)
             if error < self.learning_error_threshold:
-                print("error dropped below threshold")
-                return self.layer_matrices
+                pass
+                # print("error dropped below threshold")
+                # return
             else:
-                pass  # aaaa
+                activation_derivative = self.activation_derivative(cumulative_inputs[-1])
+                cost_gradient_vector = (
+                    self.cost_derivative(outputs[-1], desired_output) *
+                    activation_derivative
+                )
+                derivatives_per_weight = np.dot(cost_gradient_vector, outputs[-2].T)
+                weight_deltas = [derivatives_per_weight]
+                #as we go backward we accumulate weight deltas for each layer in reverse
+                for adjusting_layer_index in range(2, self.hidden_layers+2):
+                    cumulative_input = outputs[-adjusting_layer_index]
+                    activation_derivative = self.activation_derivative(cumulative_input)
+                    cost_gradient_vector = np.dot(
+                        self.layer_matrices[-adjusting_layer_index+1].T,
+                        cost_gradient_vector
+                    )
+                    weight_deltas.insert(
+                        0,
+                        np.dot(cost_gradient_vector, outputs[-adjusting_layer_index-1].T)
+                    )
+                
+                for layer_index in range(len(self.layer_matrices)):
+                    for row in range(len(self.layer_matrices[layer_index])):
+                        for col in range(len(self.layer_matrices[layer_index][row])):
+                            self.layer_matrices[layer_index][row][col] -= (
+                                self.learning_rate *
+                                weight_deltas[layer_index][row][col]
+                            )
+
         print("max cycles reached")
-        return self.layer_matrices
+        return
     
     def test_network(self, data: list[TrainingData]) -> float:
+        "returns average error for testing data (euclidean distance)"
         error = 0
         for test in data:
             output = self.process_input(test.input)
-            error += compute_error(test.output, output)
+            error += math.dist(test.output, output)
         return error/len(data)
 
 
@@ -164,10 +192,15 @@ if __name__ == "__main__":
         config["input_variables"],
         config["output_variables"]
     )
-    testing_data = training_data[:len(training_data)//4]
-    training_data = training_data[len(training_data)//4:]
+    testing_data = training_data[:len(training_data)//5]
+    training_data = training_data[len(training_data)//5:]
     print(
         f"average error on {len(testing_data)} samples with no training:",
         network.test_network(testing_data)
     )
-    
+    network.train_network(training_data)
+    print(
+        (f"average error on {len(testing_data)} samples after training on "
+        f"{len(training_data)} other samples"),
+        network.test_network(testing_data)
+    )

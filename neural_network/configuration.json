@@ -1,12 +1,12 @@
 {
   "input_variables": 2,
   "output_variables": 1,
-  "hidden_layers": 5,
-  "neurons_per_hidden_layer": 20,
+  "hidden_layers": 3,
+  "neurons_per_hidden_layer": 10,
   "neuron_bias": -0.1,
   "neuron_firing_threshold": 0.01,
-  "max_cycles": 800,
+  "max_cycles": 8000,
   "learning_error_threshold": 0.1,
-  "learning_rate": 0.4,
+  "learning_rate": 0.3,
   "training_data_location": "atan2.csv"
 }

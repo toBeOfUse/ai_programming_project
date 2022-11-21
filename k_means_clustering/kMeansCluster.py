@@ -27,19 +27,22 @@ def plotGraph(points, clusterToPointIndexes, centroids, iterationNo, showGraph):
     """
 
     # plotting the graph using the points and
-    sns.scatterplot(x=[X[0] for X in points],
-                    y=[X[1] for X in points],
+    sns.scatterplot(x=[x[0] for x in points],
+                    y=[y[1] for y in points],
                     hue=clusterToPointIndexes,
                     style=clusterToPointIndexes,
-                    palette="deep"
+                    palette="deep",
+                    marker="d",
                     )
 
     # Plotting the centroids on the graph
-    plt.plot([x for x, _ in centroids],
-             [y for _, y in centroids],
+    plt.plot([x[0] for x in centroids],
+             [y[1] for y in centroids],
              'k+',
              markersize=15,
              )
+
+    plt.title("K-means cluster")
 
     # Generating filename to store the generated plot graph
     fileName = "kmeans-iteration"+str(iterationNo)+".png"
@@ -61,7 +64,7 @@ def pointInMacro(points, xLow, yLow, xTop, yTop):
     """
     nMacro = 0
     for point in points:
-        # print("--------", point, xLow, yLow, xTop, yTop)
+
         if (point[0] >= xLow) and (point[0] < xTop) and (point[1] >= yLow) and (point[1] < yTop):
             nMacro += 1
     return nMacro
@@ -121,13 +124,14 @@ def generateSeedPoints(points, noOfClusters):
             nPoint = pointInMacro(points, xLow, yLow, xHigh, yHigh)
             # print("nPoint:", nPoint)
 
-            # TODO: need to check if this is returning the expected result.
+            # adding points to high density seeds
             if nPoint > avgDensity:
                 higherDensityMacros.append([xMid, yMid])
 
-    print("higher density points:", len(
-        higherDensityMacros), min(xSize, ySize))
-
+    # Quitting the program if high density points added is less than the required number of cluster
+    if len(higherDensityMacros) < noOfClusters:
+        print(f"{bcolors.FAIL}\n Failed to generate initial seed points as the total high density points ({len(higherDensityMacros)}) generated is less than the desired number of cluster({noOfClusters}) \n{bcolors.ENDC}")
+        quit()
     # Randomly adding the initial seed points
     for i in range(noOfClusters):
         seed = random.choice(higherDensityMacros)
@@ -347,7 +351,7 @@ def readDataPointsFile(pointsDataFileName, errorTxt, retries):
         with open(pointsDataFileName) as pointsFile:
             dataPoints = [list(map(float, point.split(",")))
                           for point in pointsFile]
-        print(len(dataPoints))
+
         return dataPoints
 
     except:
@@ -399,7 +403,7 @@ def getDataFromUser():
 
 if __name__ == '__main__':
     points, desiredClusters, maxIteration, maxAllowedShiftInThreshold = getDataFromUser()
-    print(len(points), desiredClusters, maxIteration, maxAllowedShiftInThreshold)
+    # print(len(points), desiredClusters, maxIteration, maxAllowedShiftInThreshold)
 
     kMeansClustering(points, desiredClusters, maxIteration,
                      maxAllowedShiftInThreshold)

@@ -7,6 +7,6 @@
   "neuron_firing_threshold": 0.1,
   "max_cycles": 10000,
   "learning_error_threshold": 0.1,
-  "learning_rate": 0.3,
+  
   "training_data_location": "round.csv"
 }

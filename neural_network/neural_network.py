@@ -1,3 +1,4 @@
+from __future__ import annotations
 import json
 import csv
 import sys
@@ -50,7 +51,7 @@ def read_config() -> dict[str, int|float|str]:
     needed_items = config_items.difference(config.keys())
     if len(needed_items) > 0:
         print("please enter the needed neural network configuration options:")
-    return config | {k: config_types[k](input(k+": ")) for k in needed_items}
+    return config | {k: eval(config_types[k])(input(k+": ")) for k in needed_items}
 
 def create_random_matrix(
     rows: int, cols: int, lower_bound: float = -1.0, upper_bound: float = 1.0

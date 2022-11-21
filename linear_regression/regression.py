@@ -1,6 +1,7 @@
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+from __future__ import annotations
 
 class Line:
     def __init__(self, alpha, beta):
@@ -47,6 +48,7 @@ if __name__ == "__main__":
         x_min, x_max = min(p[0] for p in points), max(p[0] for p in points)
         x = np.linspace(x_min, x_max)
         ax.plot(x, line.beta*x+line.alpha, color="#ff3333")
+        ax.set_title(str(line))
         plt.show()
 
         user_input = ""

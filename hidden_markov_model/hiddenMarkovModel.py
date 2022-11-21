@@ -6,7 +6,7 @@ customStates = int(input("Enter number of States : "))
 emissionsPerState = int(input("Enter number of Emissions in each state : "))
 
 
-randomTransmissionValues = [[random.uniform(0, 0.1 / customStates)
+randomTransmissionValues = [[random.uniform(0, 1 / customStates)
                              for i in range(customStates)] for j in range(customStates)]
 
 transitionMatrix = [np.round(item, 2)
@@ -18,14 +18,11 @@ for index in range(emissionsPerState):
         input("Enter initial state value of "+str(index)+": "))
     initial.append(initialStateValue)
 
-print("\nTransition matrix :", transitionMatrix)
-print("\nEntered Initial States: ", initial)
 
-randomEmissionValues = [[random.uniform(0, 0.1 / emissionsPerState)
+randomEmissionValues = [[random.uniform(0, 1 / emissionsPerState)
                          for i in range(emissionsPerState)] for j in range(emissionsPerState)]
 
 emissionsMatrix = [np.round(item, 2) for item in randomEmissionValues]
-print("\nEmissions Matrix:", emissionsMatrix)
 
 
 Emission = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 23, 'X': 24, 'Y': 25,
@@ -40,6 +37,9 @@ for i in range(0, numberOfPathEmission):
     element = input("enter element"+str(i)+": ")
     PathEmission.append(element)
 
+print("\nTransition matrix :", transitionMatrix)
+print("\nEntered Initial States: ", initial)
+print("\nEmissions Matrix:", emissionsMatrix)
 print("\n Path Emission:", PathEmission)
 
 

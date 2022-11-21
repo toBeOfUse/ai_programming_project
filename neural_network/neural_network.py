@@ -108,10 +108,7 @@ class NeuralNetwork:
             return incoming_value*0
 
     def process_network_layer(self, input_weights: np.array, input_vector: np.array) -> np.array:
-        weighted_and_biased = [
-            d+self.neuron_bias for d in 
-            np.dot(input_weights, input_vector)
-        ]
+        weighted_and_biased = np.dot(input_weights, input_vector) + self.neuron_bias
         return np.array([self.threshold_fire(d) for d in weighted_and_biased])
     
     def process_input(self, input: np.array) -> np.array:
@@ -119,7 +116,7 @@ class NeuralNetwork:
         output = input
         for matrix in self.layer_matrices:
             output = self.process_network_layer(matrix, output)
-        return np.array([self.threshold_fire(v) for v in output])
+        return output
 
     def train_network(self, training_data: list[TrainingData]) -> None:
         for i in range(self.max_cycles):
@@ -139,9 +136,7 @@ class NeuralNetwork:
             assert len(current_output) == self.output_variables
             error = math.dist(tuple(current_output), desired_output)
             if error < self.learning_error_threshold:
-                pass
-                # print("error dropped below threshold")
-                # return
+                continue
             else:
                 activation_derivative = self.activation_derivative(cumulative_inputs[-1])
                 cost_gradient_vector = (
@@ -201,6 +196,6 @@ if __name__ == "__main__":
     network.train_network(training_data)
     print(
         (f"average error on {len(testing_data)} samples after training on "
-        f"{len(training_data)} other samples"),
+        f"{len(training_data)} other samples:"),
         network.test_network(testing_data)
     )

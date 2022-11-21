@@ -122,7 +122,7 @@ class NeuralNetwork:
             if debug: print("layer result:\n",output)
         return output
 
-    def train_network(self, training_data: list[TrainingData]) -> None:
+    def train_network(self, training_data: list[TrainingData], debug_output: bool=False) -> None:
         for i in range(self.max_cycles):
             # process data forwards, accumulating the input and output values
             cycle_test_data = training_data[i % len(training_data)]
@@ -139,7 +139,11 @@ class NeuralNetwork:
                 outputs.append(current_output)
             assert len(current_output) == self.output_variables
             error = math.dist(tuple(current_output), desired_output)
+            if debug_output:
+                print(f"error with test data {cycle_test_data} is {error}")
             if error < self.learning_error_threshold:
+                if debug_output:
+                    print("error below learning threshold")
                 continue
             else:
                 activation_derivative = self.activation_derivative(cumulative_inputs[-1])
@@ -161,7 +165,9 @@ class NeuralNetwork:
                         0,
                         np.dot(cost_gradient_vector, outputs[-adjusting_layer_index-1].T)
                     )
-                
+                    if debug_output:
+                        print("changes in weights:")
+                        print(weight_deltas)
                 self.layer_matrices = [
                     weight-self.learning_rate*delta_weight
                     for weight, delta_weight in zip(self.layer_matrices, weight_deltas)

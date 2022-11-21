@@ -102,7 +102,7 @@ class NeuralNetwork:
         ]
 
     def threshold_fire(self, incoming_value: float) -> float:
-        if incoming_value > self.neuron_firing_threshold:
+        if abs(incoming_value) > self.neuron_firing_threshold:
             return self.activation(incoming_value)
         else:
             return incoming_value*0
@@ -111,18 +111,21 @@ class NeuralNetwork:
         weighted_and_biased = np.dot(input_weights, input_vector) + self.neuron_bias
         return np.array([self.threshold_fire(d) for d in weighted_and_biased])
     
-    def process_input(self, input: np.array) -> np.array:
+    def process_input(self, input: np.array, debug: bool=False) -> np.array:
         assert len(input) == self.input_variables, "incorrect number of inputs given"
         output = input
+        if debug: print("input:\n", output)
         for matrix in self.layer_matrices:
+            if debug: print("weights:\n",matrix)
             output = self.process_network_layer(matrix, output)
+            if debug: print("layer result:\n",output)
         return output
 
     def train_network(self, training_data: list[TrainingData]) -> None:
         for i in range(self.max_cycles):
             # process data forwards, accumulating the input and output values
             cycle_test_data = training_data[i % len(training_data)]
-            input_layer_output = np.array([cycle_test_data.input]).T  # paradoxical, i know
+            input_layer_output = np.array([cycle_test_data.input]).T
             desired_output = cycle_test_data.output
             current_output = input_layer_output
             outputs = [np.array(input_layer_output)]
@@ -152,19 +155,16 @@ class NeuralNetwork:
                     cost_gradient_vector = np.dot(
                         self.layer_matrices[-adjusting_layer_index+1].T,
                         cost_gradient_vector
-                    )
+                    ) * activation_derivative
                     weight_deltas.insert(
                         0,
                         np.dot(cost_gradient_vector, outputs[-adjusting_layer_index-1].T)
                     )
                 
-                for layer_index in range(len(self.layer_matrices)):
-                    for row in range(len(self.layer_matrices[layer_index])):
-                        for col in range(len(self.layer_matrices[layer_index][row])):
-                            self.layer_matrices[layer_index][row][col] -= (
-                                self.learning_rate *
-                                weight_deltas[layer_index][row][col]
-                            )
+                self.layer_matrices = [
+                    weight-self.learning_rate*delta_weight
+                    for weight, delta_weight in zip(self.layer_matrices, weight_deltas)
+                ]
 
         print("max cycles reached")
         return

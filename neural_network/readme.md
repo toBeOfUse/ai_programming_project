@@ -2,6 +2,6 @@
 
 By Mitch Jacovetty. Written for Python 3.11 with numpy as its only external dependency.
 
-After installing numpy with `pip install numpy --user`, run with `python neural_network.py configuration.json`. Any data deleted from configuration.json will be read from the terminal every time the program runs.
+After installing numpy with `pip install numpy --user`, run with `python neural_network.py configuration.json`. Any data not found in configuration.json will be read from the terminal when the program runs.
 
-By default, the network is trained on the [Atan2](https://en.wikipedia.org/wiki/Atan2) function, which maps the coordinates (y, x) to the counterclockwise angle between that vector and the positive x-axis.
+By default, the network is trained on a simple rounding function that returns 0 for numbers in the range [0, 0.5] and 1 for numbers in the range (0.5, 1]. This function fits well with the output capabilities of the sigmoid function as a simple test case for the algorithm functioning.

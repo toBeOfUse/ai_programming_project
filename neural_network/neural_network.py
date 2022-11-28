@@ -178,11 +178,11 @@ class NeuralNetwork:
         print("max cycles reached")
         return
     
-    def test_network(self, data: list[TrainingData]) -> float:
+    def test_network(self, data: list[TrainingData], debug: bool = False) -> float:
         "returns average error for testing data (euclidean distance)"
         error = 0
         for test in data:
-            output = self.process_input(test.input)
+            output = self.process_input(test.input, debug)
             error += math.dist(test.output, output)
         return error/len(data)
 

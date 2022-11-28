@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import itertools
 
 customStates = int(input("Enter number of States : ")
                    )  # input number of states
@@ -27,8 +28,8 @@ randomEmissionValues = [[random.uniform(0, 1 / emissionsPerState)
 emissionsMatrix = [np.round(item, 2) for item in randomEmissionValues]
 
 print(emissionsMatrix)
-Emission = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 23, 'X': 24, 'Y': 25,
-            'Z': 26, 'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9, 'k': 10, 'l': 11, 'm': 12, 'n': 13, 'o': 14, 'p': 15, 'q': 16, 'r': 17, 's': 18, 't': 19, 'u': 20, 'v': 21, 'w': 23, 'x': 24, 'y': 25, 'z': 26}
+Emission = {'A': 0, 'B': 1, 'C': 2, 'D': 3,
+            'E': 4, 'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}
 
 
 PathEmission = []
@@ -49,13 +50,13 @@ pathEmissionInIndexes = [Emission[pe] for pe in PathEmission]
 print("\n path Emission InIndexes:", pathEmissionInIndexes)
 
 
-test_tup = [1, 2, 3, 4]
+test_tup = [i for i in range(1, customStates+1)]
 
-cartesianProducts = [[a, b, c, d]
-                     for a in test_tup for b in test_tup for c in test_tup for d in test_tup]
+cartesianProducts = list(itertools.product(
+    test_tup, repeat=numberOfPathEmission))
 
 # printing the possible sequences
-print("The Possible Sequences : " + str(cartesianProducts))
+print("The Possible Sequences : ", str(cartesianProducts))
 
 # calculating the probability for the cartesian product
 allProbabilities = []

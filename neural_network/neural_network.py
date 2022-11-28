@@ -78,6 +78,8 @@ class NeuralNetwork:
         self.layer_matrices = self.create_initial_matrices()
     
     def cost_derivative(self, actual_output: np.array, target_output: np.array) -> np.array:
+        if type(target_output) is tuple:
+            target_output = np.array([target_output]).T
         return actual_output-target_output
     
     def activation(self, cumulative_input):

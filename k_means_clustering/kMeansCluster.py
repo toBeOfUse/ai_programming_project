@@ -140,7 +140,7 @@ def generateSeedPoints(points, noOfClusters):
 
     # TODO: Radius is getting very small as the xSize and ySize is getting too small
     # Assigning 0 so that the radius picked up would be half of the smallest distance between centroid
-    radius = 0  # (min([xSize, ySize]))/noOfClusters
+    radius = (min([xSize, ySize]))/noOfClusters
 
     # Calculating the distance.
     for i in range(noOfClusters):
@@ -151,7 +151,7 @@ def generateSeedPoints(points, noOfClusters):
                 distance = math.sqrt(
                     (firstSeed[0]-secondSeed[0])**2+(firstSeed[1]-secondSeed[1])**2)
                 # print("distance:", distance)
-                if distance < 2*radius or radius == 0:
+                if distance > 2*radius or radius == 0:
                     radius = distance/2
                     # print("radius change:", radius)
     # quit()
@@ -298,6 +298,7 @@ def kMeansClustering(points, desiredClusters, maxIterations, maxAllowedShiftInTh
 
         print(
             f"{bcolors.OKCYAN}\n New Centroids: {bcolors.OKBLUE} {currentSeeds}{bcolors.ENDC}")
+
         # Calculating the centroids shift
         centroidShift = calculateCentroidThreshold(
             previousCentroids, currentSeeds)

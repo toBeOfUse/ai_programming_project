@@ -3,17 +3,18 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class Line:
     def __init__(self, alpha, beta):
         self.alpha = alpha
         self.beta = beta
-    
+
     def __repr__(self):
         return f"y = {self.beta}x + {self.alpha}"
-    
+
     def get_y(self, x: float) -> float:
         return self.beta*x+self.alpha
-    
+
     @classmethod
     def regression_from_points(cls, points: list[tuple[float, float]]) -> "Line":
         x_mean = sum(p[0] for p in points)/len(points)
@@ -30,12 +31,14 @@ class Line:
         alpha = y_mean-beta*x_mean
         return cls(alpha, beta)
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("filename argument for points required")
     else:
         with open(sys.argv[1]) as datafile:
-            points = [tuple(map(float, point.split(","))) for point in datafile]
+            points = [tuple(map(float, point.split(",")))
+                      for point in datafile]
         line = Line.regression_from_points(points)
         print(f"Read {len(points)} points from {sys.argv[1]}")
         print(f"Linear regression gave the line {line}")
@@ -49,11 +52,15 @@ if __name__ == "__main__":
         x = np.linspace(x_min, x_max)
         ax.plot(x, line.beta*x+line.alpha, color="#ff3333")
         ax.set_title(str(line))
+        # saving file to local file system
+        plt.savefig("linierRegression.png", facecolor="w", bbox_inches="tight",
+                    pad_inches=0.3, transparent=True)
         plt.show()
 
         user_input = ""
         while True:
-            user_input = input("Enter an x to receive the predicted y, or enter \"stop\" to stop: ")
+            user_input = input(
+                "Enter an x to receive the predicted y, or enter \"stop\" to stop: ")
             if user_input == "stop":
                 break
             else:
